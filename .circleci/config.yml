@@ -48,17 +48,19 @@ jobs:
           fingerprints:
             - "SHA256:/mhK5zu5zxTnfmJJNOOcJzuXz8eFeg8JTDCqkY5iaSQ"
       - run:
-          name: Pull image & run container
+          name: Pull image
           command: |
-            ssh -o StrictHostKeyChecking=no ${AWS_EC2_USERNAME}@${AWS_EC2_PUBLIC_DNS} "
-              docker pull ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest
-              docker run -d --name cicd-ca \
-                -p 8080:8080 -p 8443:8443 \
-                -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
-                -e AWS_SECRET_KEY=$AWS_SECRET_KEY \
-                -e AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION \
-                -e AWS_S3_BUCKET_NAME=$AWS_S3_BUCKET_NAME \
-                ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest"
+            ssh -o StrictHostKeyChecking=no ${AWS_EC2_USERNAME}@${AWS_EC2_PUBLIC_DNS} "docker pull ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest"
+      - run:
+          name: Run container
+          command: |
+            ssh -o StrictHostKeyChecking=no ${AWS_EC2_USERNAME}@${AWS_EC2_PUBLIC_DNS} "docker run -d --name cicd-ca \
+              -p 8080:8080 -p 8443:8443 \
+              -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+              -e AWS_SECRET_KEY=$AWS_SECRET_KEY \
+              -e AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION \
+              -e AWS_S3_BUCKET_NAME=$AWS_S3_BUCKET_NAME \
+              ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest"
 workflows:
   version: 2
   build_and_deploy:
