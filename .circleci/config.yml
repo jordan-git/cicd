@@ -4,7 +4,7 @@ executors:
   node-executor:
     docker:
       - image: cimg/node:22.14
-    working_directory: /app
+    working_directory: ~/app
     environment:
       NODE_ENV: ${NODE_ENV} || DEV
 
