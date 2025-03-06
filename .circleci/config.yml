@@ -1,0 +1,63 @@
+version: 2.1
+
+executors:
+  node-executor:
+    docker:
+      - image: cimg/node:22.14
+    working_directory: ~/app
+    environment:
+      NODE_ENV: ${NODE_ENV} || DEV
+
+jobs:
+  build:
+    executor: node-executor
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install dependencies
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+      - run:
+          name: Run security audit
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "*"
+
+  deploy:
+    executor: node-executor
+    steps:
+      - attach_workspace:
+          at: ~/app
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:qFsNgunKew6xnyhGNVpLJ3TFAURBQDOXaaKcJDYC/HY"
+      - run:
+          name: Transfer files to EC2
+          command: |
+            scp -o StrictHostKeyChecking=no -r * ubuntu@${EC2_IP}/home/ubuntu/app/
+      - run:
+          name: SSH into EC2 and restart app
+          command: |
+            ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} << 'EOF'
+              cd /home/ubuntu/app
+              npm install --production
+              pm2 restart all || pm2 start npm -- start
+            EOF
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: main

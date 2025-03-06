@@ -1,0 +1,22 @@
+{
+  "name": "mathapp",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "test": "node_modules/.bin/mocha --reporter mocha-circleci-reporter test/*.js",
+    "dev": "nodemon ./bin/www",
+    "ec2:connect": "ssh -i ./devops-ca-aws.pem ubuntu@ec2-35-175-219-103.compute-1.amazonaws.com"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "ejs": "^3.1.10",
+    "express": "4.21.2",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
