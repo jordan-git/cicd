@@ -39,6 +39,10 @@ jobs:
           fingerprints:
             - "SHA256:qFsNgunKew6xnyhGNVpLJ3TFAURBQDOXaaKcJDYC/HY"
       - run:
+          name: Ensure target directory exists on EC2
+          command: |
+            ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} "mkdir -p /home/ubuntu/app"
+      - run:
           name: Transfer files to EC2
           command: |
             scp -o StrictHostKeyChecking=no -r * ubuntu@${EC2_IP}:/home/ubuntu/app/

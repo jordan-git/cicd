@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "test": "node_modules/.bin/mocha --reporter mocha-circleci-reporter test/*.js",
     "dev": "nodemon ./bin/www",
-    "ec2:connect": "ssh -i ./devops-ca-aws.pem ubuntu@ec2-35-175-219-103.compute-1.amazonaws.com"
+    "ec2:connect": "source ./.env && ssh -i devops-ca-aws.pem ubuntu@${EC2_IP}",
+    "ec2:deploy-ssl": "npm run ec2:send-files && npm run ec2:setup-files",
+    "ec2:send-files": "source ./.env && scp -i devops-ca-aws.pem -o StrictHostKeyChecking=no setup-ssl.sh server.crt privatekey.pem ubuntu@${EC2_IP}:~",
+    "ec2:setup-files": "source ./.env && ssh -i devops-ca-aws.pem -o StrictHostKeyChecking=no ubuntu@${EC2_IP} 'bash ~/setup-ssl.sh && rm ~/setup-ssl.sh'"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
