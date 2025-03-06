@@ -1,15 +1,19 @@
 FROM node:22.14
 
+USER root
+
+RUN mkdir -p /app && chown -R node:node /app
+
 RUN apt-get update && apt-get install -y awscli
 
-WORKDIR /app
+USER node
 
 COPY package.json package-lock.json ./
 RUN npm install --production && npm install -g pm2
 
 COPY . .
 
-COPY entrypoint.sh /app/entrypoint.sh
+COPY entrypoint.sh ~/app/entrypoint.sh
 COPY fetch-ssl.sh /app/fetch-ssl.sh
 RUN chmod +x /app/entrypoint.sh /app/fetch-ssl.sh
 
