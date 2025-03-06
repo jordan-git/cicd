@@ -46,7 +46,7 @@ jobs:
           at: ~/app
       - add_ssh_keys:
           fingerprints:
-            - "SHA256:qFsNgunKew6xnyhGNVpLJ3TFAURBQDOXaaKcJDYC/HY"
+            - "SHA256:/mhK5zu5zxTnfmJJNOOcJzuXz8eFeg8JTDCqkY5iaSQ"
       - run:
           name: Pull image & run container
           command: |
