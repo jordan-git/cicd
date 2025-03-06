@@ -5,10 +5,10 @@
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
-    "ec2:connect": "source ./.env && ssh -i devops-ca-aws.pem ubuntu@${EC2_IP}",
-    "ec2:deploy-ssl": "npm run ec2:send-files && npm run ec2:setup-files",
-    "ec2:send-files": "source ./.env && scp -i devops-ca-aws.pem -o StrictHostKeyChecking=no setup-ssl.sh server.crt privatekey.pem ubuntu@${EC2_IP}:~",
-    "ec2:setup-files": "source ./.env && ssh -i devops-ca-aws.pem -o StrictHostKeyChecking=no ubuntu@${EC2_IP} 'bash ~/setup-ssl.sh && rm ~/setup-ssl.sh'"
+    "ec2:connect": "source ./.env && ssh -i devops-ca-aws.pem ${AWS_EC2_USERNAME}@${AWS_EC2_IP}",
+    "s3:deploy-pem": "source ./.env && aws s3 cp privatekey.pem s3://${AWS_S3_BUCKET_NAME}/privatekey.pem",
+    "s3:deploy-crt": "source ./.env && aws s3 cp server.crt s3://${AWS_S3_BUCKET_NAME}/server.crt",
+    "s3:deploy-ssl": "npm run s3:deploy-pem && npm run s3:deploy-crt"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",

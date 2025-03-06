@@ -4,7 +4,7 @@ executors:
   node-executor:
     docker:
       - image: cimg/node:22.14
-    working_directory: ~/app
+    working_directory: /app
     environment:
       NODE_ENV: ${NODE_ENV} || DEV
 
@@ -13,6 +13,7 @@ jobs:
     executor: node-executor
     steps:
       - checkout
+      - setup_remote_docker
       - restore_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
       - run:
@@ -24,7 +25,15 @@ jobs:
             - node_modules
       - run:
           name: Run security audit
-          command: npm audit --audit-level=high || echo "Security vulnerabilities found"
+          command: npm audit
+      - run:
+          name: Docker login
+          command: docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
+      - run:
+          name: Build and push Docker image
+          command: |
+            docker build -t ${DOCKER_IMAGE}:latest.
+            docker push ${DOCKER_IMAGE}
       - persist_to_workspace:
           root: .
           paths:
@@ -39,18 +48,17 @@ jobs:
           fingerprints:
             - "SHA256:qFsNgunKew6xnyhGNVpLJ3TFAURBQDOXaaKcJDYC/HY"
       - run:
-          name: Ensure target directory exists on EC2
+          name: Pull image & run container
           command: |
-            ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} "mkdir -p /home/ubuntu/app"
-      - run:
-          name: Transfer files to EC2
-          command: |
-            scp -o StrictHostKeyChecking=no -r * ubuntu@${EC2_IP}:/home/ubuntu/app/
-      - run:
-          name: SSH into EC2 and restart app
-          command: |
-            ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} "cd /home/ubuntu/app && npm install --production && pm2 restart all || pm2 start npm -- start"
-
+            ssh -o StrictHostKeyChecking=no ${AWS_EC2_USERNAME}@${AWS_EC2_PUBLIC_DNS} "
+              docker pull ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest
+              docker run -d --name cicd-ca \
+                -p 8080:8080 8443:8443 \
+                -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+                -e AWS_SECRET_KEY=$AWS_SECRET_KEY \
+                -e AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION \
+                -e AWS_S3_BUCKET_NAME=$AWS_S3_BUCKET_NAME \
+                ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest"
 workflows:
   version: 2
   build_and_deploy:
