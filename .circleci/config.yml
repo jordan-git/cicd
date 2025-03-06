@@ -24,6 +24,7 @@ jobs:
             - node_modules
       - run:
           name: Run security audit
+          command: npm audit
       - persist_to_workspace:
           root: .
           paths:
