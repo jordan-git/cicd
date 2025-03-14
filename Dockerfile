@@ -13,6 +13,6 @@ COPY entrypoint.sh /home/node/app/entrypoint.sh
 COPY fetch-ssl.sh /home/node/app/fetch-ssl.sh
 RUN chmod +x /home/node/app/entrypoint.sh /home/node/app/fetch-ssl.sh
 
-EXPOSE 8080 8083
+EXPOSE 8443
 
 CMD ["/home/node/app/entrypoint.sh"]
