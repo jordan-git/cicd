@@ -1,5 +1,6 @@
 version: 2.1
 
+# Define a custom executor named `node-executor` to avoid repeating the same configuration in multiple jobs
 executors:
   node-executor:
     docker:
